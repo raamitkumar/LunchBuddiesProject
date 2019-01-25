@@ -49,15 +49,17 @@ public class GenericResource {
     int number = 0;
 
     @GET
-    @Path("registration&{firstName}&{lastName}&{email}&&{password}&{phonenumber}")
+    @Path("registration&{firstName}&{lastName}&{email}&{password}&{phonenumber}")
     @Produces(MediaType.APPLICATION_JSON)
     public String getJson(@PathParam("firstName") String fn, @PathParam("lastName") String ln, @PathParam("email") String email,
             @PathParam("password") String pass,
             @PathParam("phonenumber") String pNumber) throws SQLException {
-        System.out.println("111," + fn + "," + ln + "," + email + "," + pass + "," + pNumber + ");");
+        String QUERY="\"("+111+"," +"'"+fn +"'"+ "," +"'"+ ln +"'"+ "," +"'"+ email +"'"+ "," +"'"+ pass +"'"+ ","+ "'"+ pNumber +"'"+")\"";
+       System.out.println("INSERT INTO USERS VALUES(111," +"'"+fn +"'"+ "," +"'"+ ln +"'"+ "," +"'"+ email +"'"+ "," +"'"+ pass +"'"+ ","+ "'"+ pNumber +"'"+")");
+        System.out.println(QUERY);
         try {
             stm = conclass.createConnection();
-            number = stm.executeUpdate("INSERT INTO USERS VALUES(111," + fn + "," + ln + "," + email + "," + pass + "," + pNumber + ")");
+            number = stm.executeUpdate("INSERT INTO USERS VALUES(111," +"'"+fn +"'"+ "," +"'"+ ln +"'"+ "," +"'"+ email +"'"+ ","+ "'"+ pNumber +"'"+ "," +"'"+ pass +"'"+")");
             System.out.println("total inserted rows" + number);
 
             stm.close();
@@ -78,8 +80,8 @@ public class GenericResource {
         stm = conclass.createConnection();
 
         try {
-            System.out.println("select * from USERS WHERE email=" + email + " and userpassword=" + pass);
-            ResultSet rs = stm.executeQuery("select * from USERS WHERE username=" + email + " and userpassword=" + pass);
+            System.out.println("select * from USERS WHERE EMAIL=" +"'"+ email +"'"+ " and PASSWORD=" +"'"+ pass+"'");
+            ResultSet rs = stm.executeQuery("select * from USERS WHERE EMAIL=" +"'"+ email +"'"+ " and PASSWORD=" +"'"+ pass+"'");
 
             String fName, lName, contactnumber, userpassword, dateOfbirth;
 
@@ -90,7 +92,7 @@ public class GenericResource {
                 fName = rs.getString("FIRSTNAME");
                 lName = rs.getString("LASTNAME");
                 email = rs.getString("EMAIL");
-                contactnumber = rs.getString("PHONE");
+                contactnumber = rs.getString("CONTACTNUMBER");
                 userpassword = rs.getString("PASSWORD");
                 user_Id = rs.getInt("USER_ID");
                 System.out.println("username is " + fName);
@@ -163,5 +165,55 @@ public class GenericResource {
     }
     
     
+    @GET
+    @Path("PostInfo&{Place}&{NumberofPerson}&{CuisineType}&&{StartTime}&{EndTime}@{User_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("Place") String place, @PathParam("NumberofPerson") int numberofperson, @PathParam("CuisineType") String cuisinetype,
+            @PathParam("StartTIme") String starttime,@PathParam("EndTime") String endtime,@PathParam("User_id") int userid) throws SQLException {
+        String query=("111," + place + "," + numberofperson + "," + cuisinetype + "," + starttime + "," + endtime + ","+userid+")");
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("INSERT INTO POST_ADD VALUES"+ query);
+            System.out.println("total inserted rows" + number);
 
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+     @GET
+    @Path("ADDEvent&{EventName}&{PlaceofEvent}&{startTime}&&{EndTime}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("EventName") String eventname, @PathParam("PlaceofEvent") int placeofevent,@PathParam("StartTIme") String starttime,@PathParam("EndTime") String endtime) throws SQLException {
+        String query=("111," + eventname + "," + placeofevent  + "," + starttime + "," + endtime +")");
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("INSERT INTO EVENTS VALUES"+ query);
+            System.out.println("total inserted rows" + number);
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+    
+
+       @GET
+    @Path("ADDPhotos&{Photopath}&{Event_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("EventName") String path,@PathParam("Event_id") int eventid) throws SQLException {
+        String query=("111," + path + "," + eventid +")");
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("INSERT INTO PHOTOS VALUES"+ query);
+            System.out.println("total inserted rows" + number);
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
 }
