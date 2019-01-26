@@ -216,4 +216,108 @@ public class GenericResource {
         }
         return "";
     }
+    
+      @GET
+    @Path("RemoveUser&{Email}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("Email") String email) throws SQLException {
+        
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("DELETE FROM USERS WHERE email="+ email);
+            System.out.println("total Deleted rows" + number);
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+
+        @GET
+    @Path("RemoveEvent&{EventName}&{EventPlace}&{StartDate}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("EventName") String name,@PathParam("EventPlace") String place,@PathParam("StartDate") String startdate) throws SQLException {
+        
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("DELETE FROM EVENTS WHERE EVENTNAME="+ name+"AND PLACEOFEVENT="+place+"AND STARTDATE="+startdate);
+            System.out.println("total Deleted rows" + number);
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+    
+       @GET
+    @Path("SendInvitation&{SharingTime}&{User_id}&{RecieverUserid}&{Post_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("SharingTime") String sharetime,@PathParam("User_id") int userid,@PathParam("RecieverUserid") int recieverid,
+            @PathParam("Post_id") int postid) throws SQLException {
+        
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("INSERT INTO SHARINGINVITATION VALUES("+"'"+sharetime+"'"+","+userid+","+recieverid+","+postid+")");
+            System.out.println("total Inserted rows" + number);
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+      @GET
+    @Path("RecieveInvitation&{InvitationStatus}&{StatusTime}&{User_id}&{Reciever_id}&{post_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("InvitationStatus") String invitationstatus,@PathParam("StatusTime") int time,@PathParam("User_id") int userid,@PathParam("Reciever_id")
+    int recieverid,@PathParam("Post_id") int post_id) throws SQLException {
+        
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("INSERT INTO INVITATIONSTATUS VALUES("+"'"+invitationstatus+"'"+","+time+","+userid+","+recieverid+","+post_id+")");
+            System.out.println("total Inserted rows" + number);
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+    
+      @GET
+    @Path("SendMessage&{Message}&{Sender_id}&{Reciever_id}&{SendDate}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("Message") String message,@PathParam("Sender_id") int senderid,@PathParam("Reciever_id") int receiverid)
+   ,@PathParam("SendDate") int senddate) throws SQLException {
+        
+        try {
+            stm = conclass.createConnection();
+            number = stm.executeUpdate("INSERT INTO MESSAGE VALUES("+"'"+message+"'"+","+senderid+","+receiverid+","+"'"+senddate+"'"+","+post_id+")");
+            System.out.println("total Inserted rows" + number);
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+   
+    @GET
+    @Path("RecieveMessage&{Reciever_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getJson(@PathParam("Reciever_id") int receiverid)) throws SQLException {
+        String message,userid;
+        try {
+            stm = conclass.createConnection();
+             System.out.println("select * from Message WHERE RECIEVER_ID=" + recieverid );
+            ResultSet rs = stm.executeQuery("select * from Message WHERE RECIEVER_ID=" + recieverid );
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
 }
