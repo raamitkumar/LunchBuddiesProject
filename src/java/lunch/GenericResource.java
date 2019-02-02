@@ -8,6 +8,9 @@ package lunch;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Context;
@@ -46,7 +49,19 @@ public class GenericResource {
     Connectionclass conclass = new Connectionclass();
     Statement stm;
 
+    //defining and declaring a JSon object
+    JSONObject singledata = new JSONObject();
     int number = 0;
+
+    
+    Calendar cal = Calendar.getInstance();
+    Date date=new Date();
+    
+
+java.sql.Timestamp sq = new java.sql.Timestamp(date.getTime());  
+
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+
 
     @GET
     @Path("registration&{firstName}&{lastName}&{email}&{password}&{phonenumber}")
@@ -54,7 +69,8 @@ public class GenericResource {
     public String getJson(@PathParam("firstName") String fn, @PathParam("lastName") String ln, @PathParam("email") String email,
             @PathParam("password") String pass,
             @PathParam("phonenumber") String pNumber) throws SQLException {
-        String QUERY="\"("+111+"," +"'"+fn +"'"+ "," +"'"+ ln +"'"+ "," +"'"+ email +"'"+ "," +"'"+ pass +"'"+ ","+ "'"+ pNumber +"'"+")\"";
+        int user_id=111;
+        String QUERY="\"("+user_id+"," +"'"+fn +"'"+ "," +"'"+ ln +"'"+ "," +"'"+ email +"'"+ "," +"'"+ pass +"'"+ ","+ "'"+ pNumber +"'"+")\"";
        System.out.println("INSERT INTO USERS VALUES(111," +"'"+fn +"'"+ "," +"'"+ ln +"'"+ "," +"'"+ email +"'"+ "," +"'"+ pass +"'"+ ","+ "'"+ pNumber +"'"+")");
         System.out.println(QUERY);
         try {
@@ -62,15 +78,20 @@ public class GenericResource {
             number = stm.executeUpdate("INSERT INTO USERS VALUES(111," +"'"+fn +"'"+ "," +"'"+ ln +"'"+ "," +"'"+ email +"'"+ ","+ "'"+ pNumber +"'"+ "," +"'"+ pass +"'"+")");
             System.out.println("total inserted rows" + number);
 
+            singledata.accumulate("Status","OK");
+            singledata.accumulate("Timestamp", sdf);
+            singledata.accumulate("Active",true);
+            singledata.accumulate("User_id",user_id);
+            singledata.accumulate("Message","You are successfully Register");
+            
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return "";
+        return singledata.toString();
     }
 
-    //defining and declaring a JSon object
-    JSONObject singledata = new JSONObject();
+    
 
     @GET
     @Path("Login&{email}&{password}")
@@ -97,10 +118,11 @@ public class GenericResource {
                 user_Id = rs.getInt("USER_ID");
                 System.out.println("username is " + fName);
 
-                singledata.accumulate("Status", "OK");
-
-                singledata.accumulate("Active", true);
-                singledata.accumulate("user_id", user_Id);
+                 singledata.accumulate("Status","OK");
+            singledata.accumulate("Timestamp", sdf);
+            singledata.accumulate("Active",true);
+            singledata.accumulate("User_id",user_Id);
+                
 
             }
 
@@ -147,7 +169,7 @@ public class GenericResource {
                 singledata.accumulate("lastname",lName );
                 singledata.accumulate("email",email );
                 singledata.accumulate("contactnumber", contactnumber);
-                singledata.accumulate("userpassword",userpassword );
+                singledata.accumulate("Password",userpassword );
                 singledata.accumulate("user_id", user_Id);
                 singledata.accumulate("Active", true);
                 
@@ -166,21 +188,29 @@ public class GenericResource {
     
     
     @GET
-    @Path("PostInfo&{Place}&{NumberofPerson}&{CuisineType}&&{StartTime}&{EndTime}@{User_id}")
+    @Path("PostInfo&{Place}&{NumberofPerson}&{Budget}&{CuisineType}&{StartTime}&{EndTime}&{User_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getJson(@PathParam("Place") String place, @PathParam("NumberofPerson") int numberofperson, @PathParam("CuisineType") String cuisinetype,
-            @PathParam("StartTIme") String starttime,@PathParam("EndTime") String endtime,@PathParam("User_id") int userid) throws SQLException {
-        String query=("111," + place + "," + numberofperson + "," + cuisinetype + "," + starttime + "," + endtime + ","+userid+")");
+    public String getJson(@PathParam("Place") String place, @PathParam("NumberofPerson") int numberofperson,@PathParam("Budget") double budget,@PathParam("CuisineType") String cuisinetype
+            ,@PathParam("StartTime") String starttime,@PathParam("EndTime") String endtime,@PathParam("User_id") int userid) throws SQLException {
+      int  postid=111;
+        String query=("+"+postid+"," + place + "," + numberofperson + "," +budget+","+ cuisinetype + "," + starttime + "," + endtime + ","+userid+")");
         try {
             stm = conclass.createConnection();
-            number = stm.executeUpdate("INSERT INTO POST_ADD VALUES"+ query);
+            
+            System.out.println("INSERT INTO POST_ADD VALUES("+ query);
+            number = stm.executeUpdate("INSERT INTO POST_ADD VALUES("+ query);
             System.out.println("total inserted rows" + number);
 
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+            
+            singledata.accumulate("STATUS","OK");
+            singledata.accumulate("TIMESTAMP",sdf);
+            singledata.accumulate("Post_id",postid);
+            singledata.accumulate("Message","Your add is successfully Post");
         }
-        return "";
+        return singledata.toString();
     }
      @GET
     @Path("ADDEvent&{EventName}&{PlaceofEvent}&{startTime}&&{EndTime}")
@@ -289,12 +319,12 @@ public class GenericResource {
       @GET
     @Path("SendMessage&{Message}&{Sender_id}&{Reciever_id}&{SendDate}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getJson(@PathParam("Message") String message,@PathParam("Sender_id") int senderid,@PathParam("Reciever_id") int receiverid)
-   ,@PathParam("SendDate") int senddate) throws SQLException {
+    public String sendMessagegetJson(@PathParam("Message") String message,@PathParam("Sender_id") int senderid,@PathParam("Reciever_id") int receiverid
+   ,@PathParam("SendDate") String senddatetime) throws SQLException {
         
         try {
             stm = conclass.createConnection();
-            number = stm.executeUpdate("INSERT INTO MESSAGE VALUES("+"'"+message+"'"+","+senderid+","+receiverid+","+"'"+senddate+"'"+","+post_id+")");
+            number = stm.executeUpdate("INSERT INTO MESSAGE VALUES("+"'"+message+"'"+","+senderid+","+receiverid+","+"'"+senddatetime+"'"+")");
             System.out.println("total Inserted rows" + number);
 
             stm.close();
@@ -307,7 +337,7 @@ public class GenericResource {
     @GET
     @Path("RecieveMessage&{Reciever_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getJson(@PathParam("Reciever_id") int receiverid)) throws SQLException {
+    public String RecieveMessagegetJson(@PathParam("Reciever_id") int recieverid) throws SQLException {
         String message,userid;
         try {
             stm = conclass.createConnection();
