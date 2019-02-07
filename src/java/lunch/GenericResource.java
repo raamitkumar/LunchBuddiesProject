@@ -53,36 +53,44 @@ public class GenericResource {
 
     //defining and declaring a JSon object
     JSONObject singledata = new JSONObject();
+    JSONObject singlewrong = new JSONObject();
     int number = 0;
 
-    
     Date date = new Date();
 
     java.sql.Timestamp sq = new java.sql.Timestamp(date.getTime());
 
 //    SimpleDateFormat sf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-
     @GET
     @Path("registration&{firstName}&{lastName}&{email}&{password}&{phonenumber}")
     @Produces(MediaType.APPLICATION_JSON)
     public String getJson(@PathParam("firstName") String fn, @PathParam("lastName") String ln, @PathParam("email") String email,
-            @PathParam("password") String pass,
-            @PathParam("phonenumber") String pNumber) throws SQLException {
-        int user_id = 112;
-       // String QUERY = "\"(" + user_id + "," + "'" + fn + "'" + "," + "'" + ln + "'" + "," + "'" + email + "'" + "," + "'" + pass + "'" + "," + "'" + pNumber + "'" + ")\"";
+            @PathParam("password") String pass, @PathParam("phonenumber") String pNumber) throws SQLException {
+
         System.out.println("INSERT INTO USERS VALUES(111," + "'" + fn + "'" + "," + "'" + ln + "'" + "," + "'" + email + "'" + "," + "'" + pass + "'" + "," + "'" + pNumber + "'" + ")");
-       // System.out.println(QUERY);
         try {
             stm = conclass.createConnection();
-            number = stm.executeUpdate("INSERT INTO USERS VALUES(+" + user_id + "," + "'" + fn + "'" + "," + "'" + ln + "'" + "," + "'" + email + "'" + "," + "'" + pNumber + "'" + "," + "'" + pass + "'" + ")");
+            ResultSet rs = stm.executeQuery("SELECT USER_ID FROM USERS order by USER_ID DESC");
+            rs.next();
+            int userid = rs.getInt("USER_ID");
+            System.out.println("USERID OF THE USER IS " + userid);
+            userid = ++userid;
+            number = stm.executeUpdate("INSERT INTO USERS VALUES(+" + userid + "," + "'" + fn + "'" + "," + "'" + ln + "'" + "," + "'" + email + "'" + "," + "'" + pNumber + "'" + "," + "'" + pass + "'" + ")");
             System.out.println("total inserted rows" + number);
 
-            singledata.accumulate("Status", "OK");
-            singledata.accumulate("Timestamp",sq.toInstant().toEpochMilli());
-            singledata.accumulate("Active", true);
-            singledata.accumulate("User_id", user_id);
-            singledata.accumulate("Message", "You are successfully Register");
+            if (number == 1) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Active", true);
+                singledata.accumulate("User_id", userid);
+                singledata.accumulate("Message", "You are successfully Register");
 
+            } else if (number == 0) {
+
+                singledata.accumulate("Status", "WRONG");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "You Entered the wrong details");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -99,13 +107,14 @@ public class GenericResource {
 
         try {
             System.out.println("select * from USERS WHERE EMAIL=" + "'" + email + "'" + " and PASSWORD=" + "'" + pass + "'");
-            ResultSet rs = stm.executeQuery("select * from USERS WHERE EMAIL=" + "'" + email + "'" + " and PASSWORD=" + "'" + pass + "'");
+            ResultSet rs = stm.executeQuery("select * from USERS WHERE EMAIL=" + "'" + email + "'" + " AND PASSWORD=" + "'" + pass + "'");
 
             String fName, lName, contactnumber, userpassword, dateOfbirth;
 
-            int user_Id;
+            int user_Id = 0;
 
             while (rs.next()) {
+
                 System.out.println("yaaehhhhhhhhhhhhhhhhhhhhhhn........................................");
                 fName = rs.getString("FIRSTNAME");
                 lName = rs.getString("LASTNAME");
@@ -114,17 +123,22 @@ public class GenericResource {
                 userpassword = rs.getString("PASSWORD");
                 user_Id = rs.getInt("USER_ID");
                 System.out.println("username is " + fName);
+                if (user_Id != 0) {
 
-                singledata.accumulate("Status", "OK");
-                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
-                singledata.accumulate("Active", true);
-                singledata.accumulate("User_id", user_Id);
+                    singledata.accumulate("Status", "OK");
+                    singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                    singledata.accumulate("Active", true);
+                    singledata.accumulate("User_id", user_Id);
+                }
 
             }
-
+            if (user_Id == 0) {
+                singledata.accumulate("Status", "WRONG");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "YOUR ENTERED THE WRONG INFORMATION");
+            }
             rs.close();
             stm.close();
-
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -144,7 +158,7 @@ public class GenericResource {
 
             String fName, lName, email, contactnumber, userpassword, username;
 
-            int user_Id;
+            int user_Id = 0;
 
             while (rs.next()) {
                 System.out.println("rs have values........................");
@@ -157,7 +171,7 @@ public class GenericResource {
                 System.out.println("username is " + fName);
 
                 singledata.accumulate("Status", "OK");
-                singledata.accumulate("TIMESTAMP",sq.toInstant().toEpochMilli());
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
                 singledata.accumulate("firstname", fName);
                 singledata.accumulate("lastname", lName);
                 singledata.accumulate("email", email);
@@ -165,6 +179,11 @@ public class GenericResource {
                 singledata.accumulate("Password", userpassword);
                 singledata.accumulate("user_id", user_Id);
 
+            }
+            if (user_Id == 0) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "something wrong in the userID");
             }
 
             rs.close();
@@ -182,19 +201,32 @@ public class GenericResource {
     @Produces(MediaType.APPLICATION_JSON)
     public String getJson(@PathParam("Place") String place, @PathParam("NumberofPerson") int numberofperson, @PathParam("Budget") double budget, @PathParam("CuisineType") String cuisinetype,
             @PathParam("StartTime") String starttime, @PathParam("EndTime") String endtime, @PathParam("User_id") int userid) throws SQLException {
-        int postid = 111;
-        String query = ("+" + postid + "," + place + "," + numberofperson + "," + budget + "," + cuisinetype + "," + starttime + "," + endtime + "," + userid + ")");
+
         try {
             stm = conclass.createConnection();
 
-            System.out.println("INSERT INTO POST_ADD VALUES(" + query);
-            number = stm.executeUpdate("INSERT INTO POST_ADD VALUES(" + query);
+            ResultSet rs = stm.executeQuery("SELECT POST_ID FROM POST_ADD ORDER BY POST_ID DESC");
+            rs.next();
+            int postid = rs.getInt("POST_ID");
+            System.out.println("POSTID OF THE POST IS " + postid);
+            postid = ++postid;
+
+            System.out.println("INSERT INTO POST_ADD VALUES(" + postid + "," + place + "," + numberofperson + "," + budget + "," + cuisinetype + "," + starttime + "," + endtime + "," + userid + ")");
+            number = stm.executeUpdate("INSERT INTO POST_ADD VALUES(" + postid + "," + place + "," + numberofperson + "," + budget + "," + cuisinetype + "," + starttime + "," + endtime + "," + userid + ")");
             System.out.println("total inserted rows" + number);
 
-            singledata.accumulate("STATUS", "OK");
-            singledata.accumulate("TIMESTAMP",sq.toInstant().toEpochMilli());
-            singledata.accumulate("Post_id", postid);
-            singledata.accumulate("Message", "Your add is successfully Post");
+            if (number == 1) {
+                singledata.accumulate("STATUS", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Post_id", postid);
+                singledata.accumulate("Message", "Your add is successfully Post");
+            } else {
+
+                singledata.accumulate("STATUS", "WRONG");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "Your "
+                        + "entered information is wrong");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -208,18 +240,29 @@ public class GenericResource {
     @Produces(MediaType.APPLICATION_JSON)
     public String getJson(@PathParam("EventName") String eventname, @PathParam("PlaceofEvent") String placeofevent, @PathParam("startTime") String starttime, @PathParam("EndTime") String endtime,
             @PathParam("user_id") int user_id) throws SQLException {
-        int event_id = 1;
-        String query = (event_id + "," + "'" + eventname + "'" + "," + "'" + placeofevent + "'" + "," + "'" + starttime + "'" + "," + "'" + endtime + "'" + "," + user_id + ")");
+
         try {
             stm = conclass.createConnection();
+            ResultSet rs = stm.executeQuery("SELECT EVENTID FROM EVENTS ORDER BY EVENTID DESC ");
+            rs.next();
+            int event_id = rs.getInt("EVENTID");
+            event_id = ++event_id;
+            String query = (event_id + "," + "'" + eventname + "'" + "," + "'" + placeofevent + "'" + "," + "'" + starttime + "'" + "," + "'" + endtime + "'" + "," + user_id + ")");
+
             System.out.println("INSERT INTO EVENTS VALUES(" + query);
             number = stm.executeUpdate("INSERT INTO EVENTS VALUES(" + query);
             System.out.println("total inserted rows" + number);
 
-            singledata.accumulate("Status", "OK");
-            singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
-            singledata.accumulate("Event_id", event_id);
-            singledata.accumulate("Message", "Event is succesfully added");
+            if (number == 1) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Event_id", event_id);
+                singledata.accumulate("Message", "Event is succesfully added");
+            } else {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "Event is succesfully added");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -232,17 +275,23 @@ public class GenericResource {
     @Path("ADDPhotos&{Photobase64code}&{Event_id}")
     @Produces(MediaType.APPLICATION_JSON)
     public String getJson(@PathParam("Photobase64code") String code, @PathParam("Event_id") int eventid) throws SQLException {
-        int photo_id=1001;
-        String query = (photo_id+"," + eventid+code+ ")");
+        int photo_id = 1001;
+        String query = (photo_id + "," + eventid + code + ")");
         try {
             stm = conclass.createConnection();
             number = stm.executeUpdate("INSERT INTO PHOTOS VALUES" + query);
             System.out.println("total inserted rows" + number);
 
-            singledata.accumulate("STATUS","OK");
-            singledata.accumulate("TIMESTAMP",sq.toInstant().toEpochMilli());
-            singledata.accumulate("Photo_ID",photo_id);
-            singledata.accumulate("Message","successfully uploaded");
+            if (number == 1) {
+                singledata.accumulate("STATUS", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Photo_ID", photo_id);
+                singledata.accumulate("Message", "successfully uploaded");
+            } else {
+                singledata.accumulate("STATUS", "WRONG");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "INFORMATION IS WRONG");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -261,7 +310,7 @@ public class GenericResource {
             number = stm.executeUpdate("DELETE FROM USERS WHERE email=" + email);
             System.out.println("total Deleted rows" + number);
             singledata.accumulate("Status", "OK");
-            singledata.accumulate("Timestamp",sq.toInstant().toEpochMilli());
+            singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
             singledata.accumulate("Message", "User is successfulkly removed");
             stm.close();
         } catch (SQLException ex) {
@@ -300,9 +349,15 @@ public class GenericResource {
             number = stm.executeUpdate("INSERT INTO SHARINGINVITATION VALUES(" + "'" + sharetime + "'" + "," + userid + "," + recieverid + "," + postid + ")");
             System.out.println("total Inserted rows" + number);
 
-            singledata.accumulate("Status", "OK");
-            singledata.accumulate("TimeStamp",sq.toInstant().toEpochMilli());
-            singledata.accumulate("Message", "Invitation Sent Successfully");
+            if (number == 1) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("TimeStamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "Invitation Sent Successfully");
+            } else {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("TimeStamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "the user_id is no more available");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -322,10 +377,17 @@ public class GenericResource {
             number = stm.executeUpdate("INSERT INTO INVITATION VALUES(" + "'" + invitationstatus + "','" + time + "'," + userid + "," + recieverid + "," + postId + ")");
             System.out.println("total Inserted rows" + number);
 
+            if (number == 1) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("TimeStamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "Invitation Rejected");
+            } else {
+                singledata.accumulate("Status", "WRONG");
+                singledata.accumulate("TimeStamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "EXPIRED POST");
+
+            }
             stm.close();
-            singledata.accumulate("Status", "OK");
-            singledata.accumulate("TimeStamp", sq.toInstant().toEpochMilli());
-            singledata.accumulate("Message", "Invitation Rejected");
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
 
@@ -345,9 +407,16 @@ public class GenericResource {
             number = stm.executeUpdate("INSERT INTO MESSAGE VALUES(" + messageid + ",'" + message + "'" + "," + senderid + "," + receiverid + "," + "'" + senddatetime + "'" + ")");
             System.out.println("total Inserted rows" + number);
 
-            singledata.accumulate("Status", "OK");
-            singledata.accumulate("Timestamp",sq.toInstant().toEpochMilli());
-            singledata.accumulate("Message", "Message Sent");
+            if (number == 1) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "Message Sent");
+            } else {
+
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "EXPIRED POST");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -373,14 +442,18 @@ public class GenericResource {
                 date = rs.getString("MessageTime");
                 message_id = rs.getInt("MESSAGE_ID");
 
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Send_id", user_id);
+                singledata.accumulate("date", date);
+                singledata.accumulate("Message", message);
             }
+            if (user_id != 0) {
 
-            singledata.accumulate("Status", "OK");
-            singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
-            singledata.accumulate("Send_id", user_id);
-            singledata.accumulate("date", date);
-            singledata.accumulate("Message", message);
-
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "EXPIRED POST");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -413,7 +486,7 @@ public class GenericResource {
                 user_id = rs.getInt("USER_ID");
 
                 singledata.accumulate("Status", "OK");
-                singledata.accumulate("Timestamp",sq.toInstant().toEpochMilli());
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
                 singledata.accumulate("PLACE", place);
                 singledata.accumulate("NUMBEROFPERSON", numberOfperson);
                 singledata.accumulate("CUSINETYPE", cuisinetype);
@@ -473,7 +546,7 @@ public class GenericResource {
     }
 
     @GET
-    @Path("vieevent")
+    @Path("viewevent")
     @Produces(MediaType.APPLICATION_JSON)
     public String vieweventgetJson() throws SQLException {
         String eventName = null, eventPlace = null, startTime = null, endTime = null;
@@ -492,14 +565,14 @@ public class GenericResource {
                 userid = rs.getInt("USERADMIN_ID");
 
                 singledata.accumulate("Status", "OK");
-                singledata.accumulate("Timestamp",sq.toInstant().toEpochMilli());
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
                 singledata.accumulate("EVENTPLACE", eventPlace);
                 singledata.accumulate("EVENTNAME", eventName);
                 singledata.accumulate("STARTTIME", startTime);
                 singledata.accumulate("ENDTIME", endTime);
                 singledata.accumulate("USER_ID", userid);
                 singledata.accumulate("EVENT_ID", eventid);
-                
+
                 multipledata.add(singledata);
                 singledata.clear();
             }
