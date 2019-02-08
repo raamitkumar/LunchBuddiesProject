@@ -197,6 +197,56 @@ public class GenericResource {
     }
 
     @GET
+    @Path("EditProfile&{userid}&{firstName}&{lastName}&{email}&{password}&{phonenumber}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String editprofilegetJson(@PathParam("userid") int u_id, @PathParam("firstName") String fn, @PathParam("lastName") String ln, @PathParam("email") String email,
+            @PathParam("password") String pass, @PathParam("phonenumber") String pNumber) {
+        String fName, lName, emailid, contactnumber, userpassword, username;
+        stm = conclass.createConnection();
+        try {
+            System.out.println("select * from USERS WHERE EMAIL=" + email);
+            ResultSet rs = stm.executeQuery("select * from USERS WHERE USER_ID=" + u_id);
+
+            int user_Id = 0;
+
+            rs.next();
+            System.out.println("rs have values........................");
+            fName = rs.getString("FIRSTNAME");
+            lName = rs.getString("LASTNAME");
+            emailid = rs.getString("EMAIL");
+            contactnumber = rs.getString("CONTACTNUMBER");
+            userpassword = rs.getString("PASSWORD");
+            user_Id = rs.getInt("USER_ID");
+            System.out.println("username is " + fName);
+
+            
+            number = stm.executeUpdate("UODATE USERS SET FIRSTNAME=" + fn + ",LASTNAME=" + ln + ",EMAIL=" + email + ",PASSWORD=" + pass + ",CONTACTNUMBER=" + pNumber + "WHERE USER_ID=" + u_id);
+
+            singledata.accumulate("Status", "OK");
+            singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+            singledata.accumulate("firstname", fn);
+            singledata.accumulate("lastname", ln);
+            singledata.accumulate("email", email);
+            singledata.accumulate("contactnumber", pNumber);
+            singledata.accumulate("Password", pass);
+            singledata.accumulate("user_id", u_id);
+            if (user_Id == 0) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "something wrong in the userID");
+            }
+
+            rs.close();
+            stm.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return singledata.toString();
+    }
+
+    @GET
     @Path("PostInfo&{Place}&{NumberofPerson}&{Budget}&{CuisineType}&{StartTime}&{EndTime}&{User_id}")
     @Produces(MediaType.APPLICATION_JSON)
     public String getJson(@PathParam("Place") String place, @PathParam("NumberofPerson") int numberofperson, @PathParam("Budget") double budget, @PathParam("CuisineType") String cuisinetype,
@@ -307,11 +357,25 @@ public class GenericResource {
         try {
             stm = conclass.createConnection();
             System.out.println("DELETE FROM USERS WHERE email=" + email);
-            number = stm.executeUpdate("DELETE FROM USERS WHERE email=" + email);
+            ResultSet rs = stm.executeQuery("SELECT USER_ID FROM USERS WHERE EMAIL=" + email);
+            rs.next();
+            int user_id = rs.getInt("USER_ID");
+            number = stm.executeUpdate("DELETE FROM POST_ADD WHERE USER_ID=" + user_id);
+            if (number == 1) {
+                number = 0;
+                number = stm.executeUpdate("DELETE FROM USERS WHERE email=" + email);
+            }
             System.out.println("total Deleted rows" + number);
-            singledata.accumulate("Status", "OK");
-            singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
-            singledata.accumulate("Message", "User is successfulkly removed");
+
+            if (number == 1) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "User is successfulkly removed");
+            } else {
+                singledata.accumulate("Status", "WRONG");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("Message", "User is no more registered");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -331,11 +395,21 @@ public class GenericResource {
             number = stm.executeUpdate("DELETE FROM EVENTS WHERE EVENTNAME='" + name + "' AND PLACEOFEVENT='" + place + "' AND STARTTIME='" + startdate + "'");
             System.out.println("total Deleted rows" + number);
 
+            if (number == 1) {
+
+                singledata.accumulate("STATUS", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE ", "EVENT IS SUCCESSFULLY REMOVE");
+            } else {
+                singledata.accumulate("STATUS", "WRONG");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE ", "EVENT IS NO MORE AVAILABLE");
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return "";
+        return singledata.toString();
     }
 
     @GET
@@ -498,6 +572,12 @@ public class GenericResource {
                 multipledata.add(singledata);
                 singledata.clear();
             }
+            if (post_id == 0) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "SOME INFORMATION WENT WRONG");
+
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -538,6 +618,13 @@ public class GenericResource {
                 singledata.accumulate("BUDGET", budget);
 
             }
+            if (postid == 0) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "The post is no more available");
+
+            }
+
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
@@ -576,10 +663,88 @@ public class GenericResource {
                 multipledata.add(singledata);
                 singledata.clear();
             }
+            if (eventid == 0) {
+                singledata.accumulate("Status", "OK");
+                singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "SOME INFORMATION WENT WRONG");
+
+            }
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
         }
         return multipledata.toString();
+    }
+
+    @GET
+    @Path("addpostview&{viewdate}&{viewtime}&{userid}&{postid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String viewpostgetJson(@PathParam("viewdate") String view_date, @PathParam("viewtime") String view_time, @PathParam("userid") int user_id, @PathParam("postid") int post_id) throws SQLException {
+
+        try {
+            stm = conclass.createConnection();
+            ResultSet rs = stm.executeQuery("SELECT NUMBEROFTIMES FROM VIEWPOST");
+            rs.next();
+            int numberofpostview = rs.getInt("NUMBEROFTIMES");
+            numberofpostview = ++numberofpostview;
+            number = stm.executeUpdate("INSERT INTO VIEWPOST VALUES(" + "'" + view_date + "'," + view_time + "'," + numberofpostview + "," + user_id + post_id);
+            if (number == 1) {
+
+                singledata.accumulate("STATUS", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("NUMBEROFTIMES", numberofpostview);
+                singledata.accumulate("USER_ID", user_id);
+                singledata.accumulate("POST_ID", post_id);
+                singledata.accumulate("MESSAGE", numberofpostview + "NumberOfTimes" + user_id + "show this " + post_id + "postID");
+            } else {
+                singledata.accumulate("STATUS", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "NO USER HAS SEEN THIS ID");
+            }
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return singledata.toString();
+    }
+    JSONObject photoobject = new JSONObject();
+
+    @GET
+    @Path("viewphotos&{event_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String viewphotogetJson(@PathParam("event_id") int eventID) throws SQLException {
+        int photoid = 0;
+        String path = null;
+
+        try {
+            stm = conclass.createConnection();
+            ResultSet rs = stm.executeQuery("SELECT *  FROM PHOTOS WHERE EVENT_ID=" + eventID);
+            while (rs.next()) {
+                photoid = rs.getInt("PHOTO_ID");
+                eventID = rs.getInt("EVENT_ID");
+                path = rs.getBlob("PHOTOPATH").toString();
+
+                singledata.accumulate("STATUS", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                photoobject.accumulate("PATH", path);
+                photoobject.accumulate("PHOTO_ID", photoid);
+
+                multipledata.add(photoobject);
+                singledata.accumulate("PHOTOPATH", multipledata);
+                photoobject.clear();
+                multipledata.clear();
+            }
+            if (photoid == 0) {
+
+                singledata.accumulate("STATUS", "OK");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "NO MORE PHOTOS AVAILABLE FOR THIS EVENTS");
+            }
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return singledata.toString();
     }
 }
