@@ -795,18 +795,17 @@ public class GenericResource {
         return singledata.toString();
     }
 
-    
     @GET
     @Path("viewevent&{event_id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String vieweventsinglegetJson(@PathParam("event_id") int eventid ) throws SQLException {
+    public String vieweventsinglegetJson(@PathParam("event_id") int eventid) throws SQLException {
         String eventName = null, eventPlace = null, startTime = null, endTime = null, photopath = null;
         int eventId = 0, userid = 0, photo_id = 0;
 
         try {
             stm = conclass.createConnection();
             System.out.println("select * from EVENTS  JOIN PHOTOS ON EVENTS.EVENTID=PHOTOS.EVENT_ID");
-            rs = stm.executeQuery("select * from EVENTS  JOIN PHOTOS ON EVENTS.EVENTID=PHOTOS.EVENT_ID WHERE EVENT_ID="+eventid);
+            rs = stm.executeQuery("select * from EVENTS  JOIN PHOTOS ON EVENTS.EVENTID=PHOTOS.EVENT_ID WHERE EVENT_ID=" + eventid);
             singledata.accumulate("Status", "OK");
             singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
             while (rs.next()) {
@@ -818,11 +817,10 @@ public class GenericResource {
                 userid = rs.getInt("ADMINUSER_ID");
                 photo_id = rs.getInt("PHOTO_ID");
                 photopath = rs.getBlob("PHOTOPATH").toString();
-                
-                viewpost.accumulate("PHOTOID", photo_id);
-            viewpost.accumulate("PHOTOPATH", photopath);
 
-                
+                viewpost.accumulate("PHOTOID", photo_id);
+                viewpost.accumulate("PHOTOPATH", photopath);
+
                 multipledata.add(viewpost);
                 viewpost.clear();
             }
@@ -832,7 +830,6 @@ public class GenericResource {
             singledata.accumulate("ENDTIME", endTime);
             singledata.accumulate("USER_ID", userid);
             singledata.accumulate("EVENT_ID", eventid);
-            
 
             singledata.accumulate("EVENTDATA", multipledata);
             if (eventid == 0) {
@@ -853,6 +850,7 @@ public class GenericResource {
         }
         return singledata.toString();
     }
+
     @GET
     @Path("addeventview&{viewdate}&{eventid}&{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1004,198 +1002,172 @@ public class GenericResource {
         return singledata.toString();
     }
 
-    
-//    @GET
-//
-//    @Path("viewrecieverinvitation&{user_id}")
-//
-//    @Produces(MediaType.APPLICATION_JSON)
-//
-//    public String viewRecieveInvitationgetJson(@PathParam("user_id") int user_id) throws SQLException {
-//
-//        int recieveruser_id = 0, post_id = 0;
-//
-//        JSONObject recievemul = new JSONObject();
-//
-//        JSONObject userdata = new JSONObject();
-//
-//        JSONObject postdata = new JSONObject();
-//
-//        ResultSet rs2, rspost;
-//
-//        String placeName, cuisineType, firstName, lastName;
-//
-//        try {
-//
-//            stm = conclass.createConnection();
-//
-//            rs = stm.executeQuery("SELECT * FROM INVITATIONSTATUS NATURAL JOIN USERS NATURAL JOIN POST_ADD WHERE USER_ID="+user_id);
-//               singledata.accumulate("STATUS", "OK");
-//
-//                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
-//
-//            while (rs.next()) {
-//
-//                recieveruser_id = rs.getInt("RECIEVERUSERID");
-//
-//                post_id = rs.getInt("POST_ID");
-//
-//
-//                place = rs.getString("PLACE");
-//
-//                cuisinetype = rs.getString("CUISINETYPE");
-//
-//                startTime = rs.getDate("STARTTIME").toString();
-//
-//                endTime = rs.getDate("ENDTIME").toString();
-//
-//                budget = rs.getDouble("BUDGET");
-//
-//                numberOfperson = rs.getInt("NUMBEROFPERSON");
-//
-//                user_id = rs.getInt("USER_ID");
-//                
-//
-//                postdata.accumulate("PLACE", place);
-//
-//                postdata.accumulate("NUMBEROFPERSON", numberOfperson);
-//
-//                postdata.accumulate("CUSINETYPE", cuisinetype);
-//
-//                postdata.accumulate("STARTTIME", startTime);
-//
-//                postdata.accumulate("ENDTIME", endTime);
-//
-//                postdata.accumulate("USER_ID", user_id);
-//
-//                postdata.accumulate("POST_ID", post_id);
-//
-//                postdata.accumulate("BUDGET", budget);
-//
-//               
-//                rs2 = stm.executeQuery("SELECT * FROM USERS WHERE USER_ID=" + recieveruser_id);
-//
-//                rs2.next();
-//                System.out.println(rs2.next());
-//                firstName = rs2.getString("FIRSTNAME");
-//
-//                lastName = rs2.getString("LASTNAME");
-//
-//                userdata.accumulate("RECIEVERUSER_ID", recieveruser_id);
-//
-//                userdata.accumulate("FIRSTNAME", firstName);
-//
-//                userdata.accumulate("LASTNAME", lastName);
-//
-//                System.out.println(userdata.toString());
-//
-//                recievemul.accumulate("POSTDATA", postdata);
-//
-//                recievemul.accumulate("SENDERDATA", userdata);
-//
-//                postdata.clear();
-//
-//                userdata.clear();
-//
-//                multipledata.add(recievemul);
-//
-//                recievemul.clear();
-//
-//                singledata.accumulate("Data", multipledata);
-//
-//            }
-//
-//            multipledata.clear();
-//
-//            if (recieveruser_id == 0) {
-//
-//                singledata.accumulate("STATUS", "Wrong");
-//
-//                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
-//
-//                singledata.accumulate("MESSAGE", "You didn't have any Invitation");
-//
-//            } 
-//
-//            stm.close();
-//
-//        } catch (SQLException ex) {
-//
-//            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
-//            singledata.accumulate("STATUS", "ERROR");
-//
-//                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
-//
-//                singledata.accumulate("MESSAGE", "Database connectivity error");
-//
-//        }
-//
-//        return singledata.toString();
-//    }
-//
-//    @GET
-//    @Path("viewsendedinvitation&{user_id}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public String viewSendedInvitationgetJson(@PathParam("user_id") int user_id) throws SQLException {
-//        int recieveruser_id = 0, post_id = 0;
-//        JSONObject recievemul = new JSONObject();
-//        JSONObject userdata = new JSONObject();
-//        JSONObject postdata = new JSONObject();
-//        ResultSet rs2, rspost;
-//
-//        String statustime, invtationStatus, firstName, lastName;
-//
-//        try {
-//            stm = conclass.createConnection();
-//            rs = stm.executeQuery("SELECT *  FROM INVITATIONSTATUS NATURALJOIN USERS  NATURAL JOIN POST_ADD WHERE USER_ID=" + user_id);
-//            singledata.accumulate("STATUS", "OK");
-//            singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
-//            while (rs.next()) {
-//
-//                recieveruser_id = rs.getInt("RECIEVERUSERID");
-//                user_id = rs.getInt("USER_ID");
-//                firstName = rs.getString("FIRSTNAME");
-//                lastName = rs.getString("LASTNAME");
-//                post_id = rs.getInt("POST_ID");
-//                invtationStatus = rs.getString("INVITATIONSTATUS");
-//                statustime = rs.getString("STATUSTIME");
-//                place = rs.getString("PLACE");
-//                cuisinetype = rs.getString("CUISINETYPE");
-//                startTime = rs.getString("STARTTIME");
-//                endTime = rs.getString("ENDTIME");
-//
-//                postdata.accumulate("RECIEVERUSER_ID", recieveruser_id);
-//                postdata.accumulate("SENDERUSER_ID", user_id);
-//
-//                postdata.accumulate("POST_ID", post_id);
-//                postdata.accumulate("INVITATIONSTATUS", invtationStatus);
-//                postdata.accumulate("STATUSTIME", statustime);
-//                postdata.accumulate("FIRSTNAME", firstName);
-//                postdata.accumulate("LASTNAME", lastName);
-//                postdata.accumulate("PLACE", place);
-//                postdata.accumulate("CUISINETYPE", cuisinetype);
-//                postdata.accumulate("STARTTIME", startTime);
-//                postdata.accumulate("ENDTIME", endTime);
-//
-//                multipledata.add(postdata);
-//            }
-//            singledata.accumulate("InvitationSTATUS", multipledata);
-//            if (recieveruser_id == 0) {
-//
-//                singledata.accumulate("STATUS", "Wrong");
-//                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
-//                singledata.accumulate("MESSAGE", "You didn't have any Invitation");
-//            }
-//
-//            stm.close();
-//        } catch (SQLException ex) {
-//            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
-//
-//            singledata.accumulate("STATUS", "ERROR");
-//            singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
-//            singledata.accumulate("MESSAGE", "Database connectivity error");
-//
-//        }
-//        return singledata.toString();
-//    }
+    @GET
+
+    @Path("viewsendedinvitation&{user_id}")
+
+    @Produces(MediaType.APPLICATION_JSON)
+
+    public String viewRecieveInvitationgetJson(@PathParam("user_id") int user_id) throws SQLException {
+
+        int recieveruser_id = 0, post_id = 0;
+
+
+        JSONObject postdata = new JSONObject();
+
+     
+        String  firstName, lastName;
+
+        try {
+
+            stm = conclass.createConnection();
+
+            rs = stm.executeQuery("select i.USER_ID,i.RECIEVERUSERID,i.post_id,statustime,invitationstatus,u2.FIRSTNAME,u2.LASTNAME"
+                    + ",u2.EMAIL,p.place,p.cuisinetype,p.starttime,p.endtime,p.budget,p.numberofperson from INVITATIONSTATUS i join"
+                    + " users u1 on i.USER_ID=u1.USER_ID join "
+                    + "users u2 on i.RECIEVERUSERID=u2.USER_ID join post_add p on i.post_id=p.post_id where i.USER_ID=" + user_id);
+            singledata.accumulate("STATUS", "OK");
+            singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+            while (rs.next()) {
+
+                recieveruser_id = rs.getInt("RECIEVERUSERID");
+                post_id = rs.getInt("POST_ID");
+                place = rs.getString("PLACE");
+                cuisinetype = rs.getString("CUISINETYPE");
+                startTime = rs.getDate("STARTTIME").toString();
+                endTime = rs.getDate("ENDTIME").toString();
+                budget = rs.getDouble("BUDGET");
+                numberOfperson = rs.getInt("NUMBEROFPERSON");
+                user_id = rs.getInt("USER_ID");
+
+                postdata.accumulate("PLACE", place);
+                postdata.accumulate("NUMBEROFPERSON", numberOfperson);
+                postdata.accumulate("CUSINETYPE", cuisinetype);
+                postdata.accumulate("STARTTIME", startTime);
+                postdata.accumulate("ENDTIME", endTime);
+                postdata.accumulate("SenderUSER_ID", user_id);
+                postdata.accumulate("POST_ID", post_id);
+                postdata.accumulate("BUDGET", budget);
+
+                firstName = rs.getString("FIRSTNAME");
+
+                lastName = rs.getString("LASTNAME");
+
+                postdata.accumulate("RECIEVERUSER_ID", recieveruser_id);
+
+                postdata.accumulate("RECIEVERFIRSTNAME",firstName);
+
+                postdata.accumulate("RECIEVERLASTNAME",lastName);
+                multipledata.add(postdata);
+postdata.clear();
+                
+
+            }
+
+            rs.close();
+
+            singledata.accumulate("Data", multipledata);
+            multipledata.clear();
+
+            if (recieveruser_id == 0) {
+                singledata.clear();
+
+                singledata.accumulate("STATUS", "Wrong");
+
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+
+                singledata.accumulate("MESSAGE", "You didn't have any Invitation");
+
+            }
+
+            stm.close();
+
+        } catch (SQLException ex) {
+
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+
+            singledata.clear();
+            singledata.accumulate("STATUS", "ERROR");
+            singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+            singledata.accumulate("MESSAGE", "Database connectivity error");
+
+        }
+
+        return singledata.toString();
+    }
+
+    @GET
+    @Path("viewrecieverinvitation&{user_id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String viewSendedInvitationgetJson(@PathParam("user_id") int user_id) throws SQLException {
+        int recieveruser_id = 0, post_id = 0;
+        JSONObject recievemul = new JSONObject();
+        JSONObject userdata = new JSONObject();
+        JSONObject postdata = new JSONObject();
+        ResultSet rs2, rspost;
+
+        String statustime, invtationStatus, firstName, lastName;
+
+        try {
+            stm = conclass.createConnection();
+            rs = stm.executeQuery("SELECT s.USER_ID,s.RECIEVERUSER_ID,s.post_id,u2.FIRSTNAME,u2.LASTNAME"
+                    + ",u2.EMAIL,p.place,p.cuisinetype,p.starttime,p.endtime,p.budget,p.numberofperson FROM SHARINGINVITATION s "
+                    + "JOIN USERS u1 on s.recieveruser_id=u1.user_id JOIN POST_ADD p on s.post_id"
+                    + "=p.post_id join users u2 on s.user_id=u2.user_id WHERE RECIEVERUSER_ID=" + user_id);
+            singledata.accumulate("STATUS", "OK");
+            singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+            while (rs.next()) {
+
+                 budget = rs.getDouble("BUDGET");
+                numberOfperson = rs.getInt("NUMBEROFPERSON");
+                recieveruser_id = rs.getInt("RECIEVERUSER_ID");
+                user_id = rs.getInt("USER_ID");
+                firstName = rs.getString("FIRSTNAME");
+                lastName = rs.getString("LASTNAME");
+                post_id = rs.getInt("POST_ID");
+                
+                
+                place = rs.getString("PLACE");
+                cuisinetype = rs.getString("CUISINETYPE");
+                startTime = rs.getString("STARTTIME");
+                endTime = rs.getString("ENDTIME");
+
+                postdata.accumulate("RECIEVERUSER_ID", recieveruser_id);
+                postdata.accumulate("SENDERUSER_ID", user_id);
+
+                postdata.accumulate("POST_ID", post_id);
+                postdata.accumulate("SENDERFIRSTNAME", firstName);
+                postdata.accumulate("SENDERLASTNAME", lastName);
+                postdata.accumulate("PLACE", place);
+                postdata.accumulate("NUMBEROFPERSON", numberOfperson);
+                postdata.accumulate("CUISINETYPE", cuisinetype);
+                postdata.accumulate("STARTTIME", startTime);
+                postdata.accumulate("ENDTIME", endTime);
+                postdata.accumulate("BUDGET",budget);
+
+                multipledata.add(postdata);
+                postdata.clear();
+            }
+            singledata.accumulate("SENDERDATA", multipledata);
+            if (recieveruser_id == 0) {
+
+                
+            singledata.clear();
+                singledata.accumulate("STATUS", "Wrong");
+                singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+                singledata.accumulate("MESSAGE", "You didn't have any Invitation");
+            }
+
+            stm.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+
+            singledata.clear();
+            singledata.accumulate("STATUS", "ERROR");
+            singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
+            singledata.accumulate("MESSAGE", "Database connectivity error");
+
+        }
+        return singledata.toString();
+    }
 }
