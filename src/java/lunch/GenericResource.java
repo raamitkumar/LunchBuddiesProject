@@ -69,12 +69,14 @@ public class GenericResource {
     public String getJson(@PathParam("firstName") String fn, @PathParam("lastName") String ln, @PathParam("email") String email,
             @PathParam("password") String pass, @PathParam("phonenumber") String pNumber) throws SQLException {
         int userid = 0;
+        String email_id=null;
         try {
             stm = conclass.createConnection();
             try {
-                ResultSet rs = stm.executeQuery("SELECT USER_ID FROM USERS order by USER_ID DESC");
+                ResultSet rs = stm.executeQuery("SELECT USER_ID,EMAIL FROM USERS order by USER_ID DESC");
                 rs.next();
                 userid = rs.getInt("USER_ID");
+                email_id=rs.getString("EMAIL");
                 System.out.println("USERID OF THE USER IS " + userid);
                 ++userid;
             } catch (SQLException sq) {
@@ -126,7 +128,7 @@ public class GenericResource {
 
             int user_Id = 0;
 
-            while (rs.next()) {
+             while(rs.next()){
 
                 System.out.println("yaaehhhhhhhhhhhhhhhhhhhhhhn........................................");
                 fName = rs.getString("FIRSTNAME");
@@ -142,10 +144,11 @@ public class GenericResource {
                     singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
                     singledata.accumulate("Active", true);
                     singledata.accumulate("User_id", user_Id);
-                }
+                
 
-            }
+            }}
             if (user_Id == 0) {
+                singledata.clear();
                 singledata.accumulate("Status", "WRONG");
                 singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
                 singledata.accumulate("MESSAGE", "YOUR ENTERED THE WRONG INFORMATION");
@@ -154,6 +157,7 @@ public class GenericResource {
             stm.close();
         } catch (SQLException ex) {
             Logger.getLogger(GenericResource.class.getName()).log(Level.SEVERE, null, ex);
+            singledata.clear();
             singledata.accumulate("STATUS", "ERROR");
             singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
             singledata.accumulate("MESSAGE", "Database connectivity error");
@@ -273,6 +277,8 @@ public class GenericResource {
     public String getJson(@PathParam("Place") String place, @PathParam("NumberofPerson") int numberofperson, @PathParam("Budget") double budget, @PathParam("CuisineType") String cuisinetype,
             @PathParam("StartTime") String starttime, @PathParam("EndTime") String endtime, @PathParam("User_id") int userid) throws SQLException {
         int postid = 0;
+        
+       
         try {
             stm = conclass.createConnection();
             try {
@@ -290,12 +296,12 @@ public class GenericResource {
             number = stm.executeUpdate("INSERT INTO POST_ADD VALUES(" + postid + "," + place + "," + numberofperson + "," + budget + "," + cuisinetype + "," + starttime + "," + endtime + "," + userid + ")");
             System.out.println("total inserted rows" + number);
 
-            if (number == 1) {
+            if ((budget > 0)||(numberofperson>0)) {
                 singledata.accumulate("STATUS", "OK");
                 singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
                 singledata.accumulate("Post_id", postid);
                 singledata.accumulate("Message", "Your add is successfully Post");
-            } else if (number == 0) {
+            } else if (budget < 0) {
 
                 singledata.accumulate("STATUS", "WRONG");
                 singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
@@ -448,8 +454,11 @@ public class GenericResource {
 
         try {
             stm = conclass.createConnection();
-            System.out.println("DELETE FROM EVENTS WHERE EVENTNAME='" + name + "' AND PLACEOFEVENT='" + place + "' AND STARTTIME='" + startdate + "'");
-            number = stm.executeUpdate("DELETE FROM EVENTS WHERE EVENTNAME='" + name + "' AND PLACEOFEVENT='" + place + "' AND STARTTIME='" + startdate + "'");
+            ResultSet rs=stm.executeQuery("SELECT EVENTID FROM EVENTS WHERE EVENTNAME='" + name + "' AND PLACEOFEVENT='" + place + "' AND STARTTIME='" + startdate + "'");
+            rs.next();
+            int eventid=rs.getInt("EVENTID");
+            System.out.println("DELETE FROM EVENTS WHERE EVENTID="+eventid);
+            number = stm.executeUpdate("DELETE FROM EVENTS WHERE EVENTID="+eventid);
             System.out.println("total Deleted rows" + number);
 
             if (number == 1) {
@@ -611,7 +620,7 @@ public class GenericResource {
                 singledata.accumulate("date", date);
                 singledata.accumulate("Message", message);
             }
-            if (user_id == 0) {
+            if (user_id ==0) {
 
                 singledata.accumulate("Status", "WRONG");
                 singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
@@ -805,7 +814,7 @@ public class GenericResource {
         try {
             stm = conclass.createConnection();
             System.out.println("select * from EVENTS  JOIN PHOTOS ON EVENTS.EVENTID=PHOTOS.EVENT_ID");
-            rs = stm.executeQuery("select * from EVENTS  JOIN PHOTOS ON EVENTS.EVENTID=PHOTOS.EVENT_ID WHERE EVENT_ID=" + eventid);
+            rs = stm.executeQuery("select * from EVENTS  JOIN PHOTOS ON EVENTS.EVENTID=PHOTOS.EVENTID WHERE EVENT_ID=" + eventid);
             singledata.accumulate("Status", "OK");
             singledata.accumulate("Timestamp", sq.toInstant().toEpochMilli());
             while (rs.next()) {
@@ -936,7 +945,7 @@ public class GenericResource {
                 singledata.accumulate("NUMBEROFTIMES", numberofpostview);
                 singledata.accumulate("USER_ID", user_id);
                 singledata.accumulate("POST_ID", post_id);
-                singledata.accumulate("MESSAGE", numberofpostview + " Times " + user_id + " show this " + post_id + " postID");
+                singledata.accumulate("MESSAGE",  " User of User_id " + user_id + " see the post of post_id " + post_id + " for "+numberofpostview+" Times");
             } else if (number == 0) {
                 singledata.accumulate("STATUS", "OK");
                 singledata.accumulate("TIMESTAMP", sq.toInstant().toEpochMilli());
